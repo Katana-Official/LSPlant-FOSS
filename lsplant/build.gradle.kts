@@ -13,6 +13,7 @@ val androidBuildToolsVersion: String by rootProject.extra
 val androidCompileSdkVersion: Int by rootProject.extra
 val androidNdkVersion: String by rootProject.extra
 val androidCmakeVersion: String by rootProject.extra
+val androidNinjaPath: String by rootProject.extra
 
 android {
     compileSdk = androidCompileSdkVersion
@@ -43,7 +44,10 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments("-DCMAKE_MAKE_PROGRAM=C:/Program Files/CMake/bin/ninja.exe")
+                if(androidNinjaPath.isNotBlank())
+                {
+                    arguments += "-DCMAKE_MAKE_PROGRAM=$androidNinjaPath"
+                }
             }
         }
     }
