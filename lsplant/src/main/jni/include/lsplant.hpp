@@ -30,25 +30,17 @@ struct InitInfo {
     /// \p return is the absolute address in the memory that points to the target symbol. It should
     /// be null if the symbol cannot be found. <br>
     /// \note It should be able to resolve symbols from both .dynsym and .symtab.
-    using ArtSymbolResolver = std::function<void *(std::string_view symbol_name)>;
-
-    /// \brief Type of prefix symbol resolver to \p libart.so.
-    /// In \ref std::function form so that user can use lambda expression with capture list.<br>
-    /// \p symbol_prefix is the symbol prefix that needs to retrieve.<br>
-    /// \p return is the first absolute address in the memory that points to the target symbol.
-    /// It should be null if the symbol cannot be found. <br>
-    /// \note It should be able to resolve symbols from both .dynsym and .symtab.
-    using ArtSymbolPrefixResolver = std::function<void *(std::string_view symbol_prefix)>;
+    using SymbolFinder = void *(*)(std::string_view);
 
     /// \brief The inline hooker function. Must not be null.
     InlineHookFunType inline_hooker;
     /// \brief The inline unhooker function. Must not be null.
     InlineUnhookFunType inline_unhooker;
     /// \brief The symbol resolver to \p libart.so. Must not be null.
-    ArtSymbolResolver art_symbol_resolver;
+    mutable SymbolFinder art_symbol_resolver;
 
     /// \brief The symbol prefix resolver to \p libart.so. May be null.
-    ArtSymbolPrefixResolver art_symbol_prefix_resolver;
+    mutable SymbolFinder art_symbol_prefix_resolver;
 
     /// \brief The generated class name. Must not be empty. It contains a field and a method
     /// and they could be set by \p generated_field_name and \p generated_method_name respectively.
