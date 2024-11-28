@@ -40,6 +40,12 @@ android {
 
     defaultConfig {
         minSdk = androidMinSdkVersion
+
+        externalNativeBuild {
+            cmake {
+                arguments("-DCMAKE_MAKE_PROGRAM=C:/Program Files/CMake/bin/ninja.exe")
+            }
+        }
     }
 
     buildTypes {

@@ -12,9 +12,15 @@ This project is part of LSPosed framework under GNU Lesser General Public Licens
 
 ## Features
 
-+ Support Android 5.0 - 15 Beta2 (API level 21 - 35)
++ Support Android 5.0 - 16 DP1 (API level 21 - 35 / CodeName Baklava)
 + Support armeabi-v7a, arm64-v8a, x86, x86-64, riscv64
 + Support customized inline hook framework and ART symbol resolver
+
+## Build
+
+You need to configure the cmake path by ***cmake.dir=C\:\\Program Files\\CMake*** in your local.properties file.  
+You may also need to configure the ninja path with a custom version [Download here](https://github.com/ninja-build/ninja/releases) and  
+configure it in the gradle.kts file.  
 
 ## Documentation
 
@@ -34,16 +40,15 @@ android {
 }
 
 dependencies {
-    implementation "org.lsposed.lsplant:lsplant:+"
+    implementation(......[aar file])
 }
 ```
 
 If you don't want to include `libc++_shared.so` in your APK, you can use `lsplant-standalone` instead:
 
-```gradle
-dependencies {
-    implementation "org.lsposed.lsplant:lsplant-standalone:+"
-}
+```shell
+# build command
+./gradlew lsplant:assembleStandalone
 ```
 
 ### 1. Init LSPlant within JNI_OnLoad
@@ -141,10 +146,6 @@ Returns whether the deoptimizing succeed or not.
 
 It is safe to call deoptimizing on a hooked method because the deoptimization will perform on the backup method instead.
 
-
-## Credits
-Inspired by the following frameworks:
-- [YAHFA](https://github.com/PAGalaxyLab/YAHFA)
-- [SandHook](https://github.com/asLody/SandHook)
-- [Pine](https://github.com/canyie/pine)
-- [Epic](https://github.com/tiann/epic)
+## Recommend apps:
+[Meta](https://github.com/Katana-Official/Meta/releases)
+[SPatch ZKEVM](https://github.com/Katana-Official/SPatch-Update/releases)
