@@ -640,6 +640,10 @@ using ::lsplant::IsHooked;
     if (!info.inline_hooker || !info.inline_unhooker || !info.art_symbol_resolver) {
         return false;
     }
+    if(!info.art_symbol_prefix_resolver)
+    {
+        info.art_symbol_prefix_resolver = info.art_symbol_resolver;
+    }
     bool static kInit = InitConfig(info) && InitJNI(env) && InitNative(env, info);
     return kInit;
 }
