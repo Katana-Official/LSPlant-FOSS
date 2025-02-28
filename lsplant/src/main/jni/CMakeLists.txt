@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 project(lsplant)
-
+add_definitions(-DLOG_DISABLED=1)
 find_program(CCACHE ccache)
 
 set(CMAKE_CXX_STANDARD 23)
