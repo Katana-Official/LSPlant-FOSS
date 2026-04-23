@@ -12,6 +12,13 @@ namespace lsplant {
 template <size_t N>
 struct FixedString {
     consteval FixedString(const char (&str)[N]) { std::copy_n(str, N, data); }
+#if defined(__LP64__)
+    template <size_t M>
+    consteval FixedString(const char (&)[M], const char (&str)[N]) : FixedString(str) {}
+#else
+    template <size_t M>
+    consteval FixedString(const char (&str)[N], const char (&)[M]) : FixedString(str) {}
+#endif
     char data[N] = {};
 };
 
@@ -95,10 +102,12 @@ struct Hooker<Sym, Ret(Args...)> : Function<Sym, Ret(Args...)> {
         Function<Sym, Ret(Args...)>::operator=(function);
         return *this;
     }
-private:
+
     [[gnu::always_inline]] constexpr Hooker(Ret (*replace)(Args...)) {
         replace_ = replace;
     };
+
+private:
     friend struct HookHandler;
     template<FixedString S>
     friend struct Symbol;
@@ -111,10 +120,12 @@ struct Hooker<Sym, Ret(This::*)(Args...)> : Function<Sym, Ret(This::*)(Args...)>
         Function<Sym, Ret(This::*)(Args...)>::operator=(function);
         return *this;
     }
-private:
+
     [[gnu::always_inline]] constexpr Hooker(Ret (*replace)(This *, Args...)) {
         replace_ = replace;
     };
+
+private:
     friend struct HookHandler;
     template<FixedString S>
     friend struct Symbol;

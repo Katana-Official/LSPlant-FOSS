@@ -27,20 +27,18 @@ export class JitCodeCache {
         }
     }
 
-    inline static auto GarbageCollectCache_ =
-            "_ZN3art3jit12JitCodeCache19GarbageCollectCacheEPNS_6ThreadE"_sym.hook->*[]
-        <MemBackup auto backup>
-        (JitCodeCache *thiz, Thread *self) static -> void {
+    inline static Hooker<"_ZN3art3jit12JitCodeCache19GarbageCollectCacheEPNS_6ThreadE",
+                         void(JitCodeCache *, Thread *)>
+        GarbageCollectCache_ = +[](JitCodeCache *thiz, Thread *self) -> void {
             MoveObsoleteMethods(thiz);
-            backup(thiz, self);
+            GarbageCollectCache_(thiz, self);
         };
 
-    inline static auto DoCollection_ =
-            "_ZN3art3jit12JitCodeCache12DoCollectionEPNS_6ThreadE"_sym.hook->*[]
-        <MemBackup auto backup>
-        (JitCodeCache *thiz, Thread *self) static -> void {
+    inline static Hooker<"_ZN3art3jit12JitCodeCache12DoCollectionEPNS_6ThreadE",
+                         void(JitCodeCache *, Thread *)>
+        DoCollection_ = +[](JitCodeCache *thiz, Thread *self) -> void {
             MoveObsoleteMethods(thiz);
-            backup(thiz, self);
+            DoCollection_(thiz, self);
         };
 
 public:

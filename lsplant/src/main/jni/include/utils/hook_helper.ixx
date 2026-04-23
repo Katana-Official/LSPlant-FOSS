@@ -6,6 +6,7 @@ export module hook_helper;
 
 export namespace lsplant {
 using lsplant::FixedString;
+using lsplant::Hooker;
 using lsplant::HookHandler;
 using lsplant::operator""_sym;
 using lsplant::Backup;

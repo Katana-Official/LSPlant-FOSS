@@ -17,28 +17,29 @@ enum class CompilationKind {
 };
 
 export class Jit {
-    inline static auto EnqueueOptimizedCompilation_ =
-        "_ZN3art3jit3Jit27EnqueueOptimizedCompilationEPNS_9ArtMethodEPNS_6ThreadE"_sym.hook->*[]
-        <MemBackup auto backup>
-        (Jit *thiz, ArtMethod *method, Thread *self) static -> void {
+    inline static Hooker<
+        "_ZN3art3jit3Jit27EnqueueOptimizedCompilationEPNS_9ArtMethodEPNS_6ThreadE",
+        void(Jit *, ArtMethod *, Thread *)>
+        EnqueueOptimizedCompilation_ = +[](Jit *thiz, ArtMethod *method, Thread *self) -> void {
             if (auto target = IsBackup(method); target) [[unlikely]] {
                 LOGD("Propagate enqueue compilation: %p -> %p", method, target);
                 method = target;
             }
-            return backup(thiz, method, self);
+            return EnqueueOptimizedCompilation_(thiz, method, self);
         };
 
-    inline static auto AddCompileTask_ =
-        "_ZN3art3jit3Jit14AddCompileTaskEPNS_6ThreadEPNS_9ArtMethodENS_15CompilationKindEb"_sym.hook->*[]
-        <MemBackup auto backup>
-        (Jit *thiz, Thread *self, ArtMethod *method, CompilationKind compilation_kind, bool precompile) static -> void {
+    inline static Hooker<
+        "_ZN3art3jit3Jit14AddCompileTaskEPNS_6ThreadEPNS_9ArtMethodENS_15CompilationKindEb",
+        void(Jit *, Thread *, ArtMethod *, CompilationKind, bool)>
+        AddCompileTask_ = +[](Jit *thiz, Thread *self, ArtMethod *method,
+                              CompilationKind compilation_kind, bool precompile) -> void {
             if (compilation_kind == CompilationKind::kOptimized && !precompile) {
                 if (auto b = IsHooked(method); b) [[unlikely]] {
                     LOGD("Propagate compile task: %p -> %p", method, b);
                     method = b;
                 }
             }
-            return backup(thiz, self, method, compilation_kind, precompile);
+            return AddCompileTask_(thiz, self, method, compilation_kind, precompile);
         };
 
 public:
