@@ -6,41 +6,33 @@ module;
 
 #include "logging.hpp"
 
-export module art_method;
+export module lsplant:art_method;
 
-import common;
+import :common;
 import hook_helper;
 
-namespace lsplant::art {
-namespace mirror {
-class Class;
-}
+export namespace lsplant::art {
+class ArtMethod {
+    inline static auto PrettyMethod_ =
+            "_ZN3art9ArtMethod12PrettyMethodEPS0_b"_sym.as<std::string(ArtMethod::*)(bool)>;
 
-export class ArtMethod {
-    inline static MemberFunction<"_ZN3art9ArtMethod12PrettyMethodEPS0_b", ArtMethod,
-                                 std::string(bool)>
-        PrettyMethod_;
+    inline static auto PrettyMethodStatic_ =
+            "_ZN3art12PrettyMethodEPNS_9ArtMethodEb"_sym.as<std::string(ArtMethod *thiz, bool with_signature)>;
 
-    inline static Function<"_ZN3art12PrettyMethodEPNS_9ArtMethodEb",
-                           std::string(ArtMethod *thiz, bool with_signature)>
-        PrettyMethodStatic_;
+    inline static auto PrettyMethodMirror_ =
+            "_ZN3art12PrettyMethodEPNS_6mirror9ArtMethodEb"_sym.as<std::string(ArtMethod *thiz, bool with_signature)>;
 
-    inline static Function<"_ZN3art12PrettyMethodEPNS_6mirror9ArtMethodEb",
-                           std::string(ArtMethod *thiz, bool with_signature)>
-        PrettyMethodMirror_;
+    inline static auto GetMethodShortyL_ =
+            "_ZN3artL15GetMethodShortyEP7_JNIEnvP10_jmethodID"_sym.as<const char *(JNIEnv *env, jmethodID method)>;
 
-    inline static Function<"_ZN3artL15GetMethodShortyEP7_JNIEnvP10_jmethodID",
-                           const char *(JNIEnv *env, jmethodID method)>
-        GetMethodShortyL_;
-    inline static Function<"_ZN3art15GetMethodShortyEP7_JNIEnvP10_jmethodID",
-                           const char *(JNIEnv *env, jmethodID mid)>
-        GetMethodShorty_;
+    inline static auto GetMethodShorty_ =
+            "_ZN3art15GetMethodShortyEP7_JNIEnvP10_jmethodID"_sym.as<const char *(JNIEnv *env, jmethodID mid)>;
 
-    inline static MemberFunction<"_ZN3art9ArtMethod24ThrowInvocationTimeErrorEv", ArtMethod, void()>
-        ThrowInvocationTimeError_;
+    inline static auto ThrowInvocationTimeError_ =
+            "_ZN3art9ArtMethod24ThrowInvocationTimeErrorEv"_sym.as<void(ArtMethod::*)()>;
 
-    inline static Function<"artInterpreterToCompiledCodeBridge", void()>
-        art_interpreter_to_compiled_code_bridge_;
+    inline static auto art_interpreter_to_compiled_code_bridge_ =
+            "artInterpreterToCompiledCodeBridge"_sym.as<void()>;
 
     inline void ThrowInvocationTimeError() {
         if (ThrowInvocationTimeError_) {
@@ -303,13 +295,12 @@ public:
         }
         if (sdk_int < __ANDROID_API_Q__) kAccFastInterpreterToInterpreterInvoke = 0;
 
-        if (!handler.dlsym(GetMethodShortyL_, true) && !handler.dlsym(GetMethodShorty_)) {
+        if (!handler(GetMethodShortyL_, true, GetMethodShorty_)) {
             LOGE("Failed to find GetMethodShorty");
             return false;
         }
 
-        handler.dlsym(PrettyMethod_) || handler.dlsym(PrettyMethodStatic_) ||
-            handler.dlsym(PrettyMethodMirror_);
+        handler(PrettyMethod_, PrettyMethodStatic_, PrettyMethodMirror_);
 
         if (sdk_int <= __ANDROID_API_O__) [[unlikely]] {
             auto abstract_method_error = JNI_FindClass(env, "java/lang/AbstractMethodError");
@@ -324,7 +315,7 @@ public:
                     LOGE("Failed to find Executable.getName");
                     return false;
                 }
-                handler.dlsym(ThrowInvocationTimeError_);
+                handler(ThrowInvocationTimeError_);
                 auto abstract_method = FromReflectedMethod(
                     env, JNI_ToReflectedMethod(env, executable, executable_get_name, false).get());
                 uint32_t access_flags = abstract_method->GetAccessFlags();
@@ -343,7 +334,7 @@ public:
             kAccCompileDontBother = 0;
         }
         if (sdk_int <= __ANDROID_API_M__) [[unlikely]] {
-            if (!handler.dlsym(art_interpreter_to_compiled_code_bridge_)) {
+            if (!handler(art_interpreter_to_compiled_code_bridge_)) {
                 return false;
             }
             if (sdk_int >= __ANDROID_API_L_MR1__) {

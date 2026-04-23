@@ -2,10 +2,10 @@ module;
 
 #include <android/api-level.h>
 
-export module scope_gc_critical_section;
+export module lsplant:scope_gc_critical_section;
 
-import thread;
-import common;
+import :thread;
+import :common;
 import hook_helper;
 
 namespace lsplant::art::gc {
@@ -98,13 +98,10 @@ private:
 };
 
 export class ScopedGCCriticalSection {
-    inline static MemberFunction<
-        "_ZN3art2gc23ScopedGCCriticalSectionC2EPNS_6ThreadENS0_7GcCauseENS0_13CollectorTypeE",
-        ScopedGCCriticalSection, void(Thread *, GcCause, CollectorType)>
-        constructor_;
-    inline static MemberFunction<"_ZN3art2gc23ScopedGCCriticalSectionD2Ev", ScopedGCCriticalSection,
-                                 void()>
-        destructor_;
+    inline static auto constructor_ =
+            "_ZN3art2gc23ScopedGCCriticalSectionC2EPNS_6ThreadENS0_7GcCauseENS0_13CollectorTypeE"_sym.as<void(ScopedGCCriticalSection::*)(Thread *, GcCause, CollectorType)>;
+    inline static auto destructor_ =
+            "_ZN3art2gc23ScopedGCCriticalSectionD2Ev"_sym.as<void(ScopedGCCriticalSection::*)()>;
 
 public:
     ScopedGCCriticalSection(Thread *self, GcCause cause, CollectorType collector_type) {
@@ -121,7 +118,7 @@ public:
         // for Android M, it's safe to not found since we have suspendVM & resumeVM
         auto sdk_int = GetAndroidApiLevel();
         if (sdk_int >= __ANDROID_API_N__) [[likely]] {
-            if (!handler.dlsym(constructor_) || !handler.dlsym(destructor_)) {
+            if (!handler(constructor_) || !handler(destructor_)) {
                 return false;
             }
         }

@@ -6,9 +6,9 @@ module;
 
 #include "logging.hpp"
 
-export module dex_file;
+export module lsplant:dex_file;
 
-import common;
+import :common;
 import hook_helper;
 
 namespace lsplant::art {
@@ -18,32 +18,28 @@ export class DexFile {
         uint32_t checksum_;  // See also location_checksum_
     };
 
-    inline static Function<
-        {"_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_",
-         "_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_"},
+    inline static auto OpenMemory_ =
+        ("_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_"_sym |
+         "_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_10OatDexFileEPS9_"_sym).as<
         std::unique_ptr<DexFile>(const uint8_t* dex_file, size_t size, const std::string& location,
                                  uint32_t location_checksum, void* mem_map,
-                                 const void* oat_dex_file, std::string* error_msg)>
-        OpenMemory_;
+                                 const void* oat_dex_file, std::string* error_msg)>;
 
-    inline static Function<
-        {"_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_7OatFileEPS9_",
-         "_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_7OatFileEPS9_"},
+    inline static auto OpenMemoryRaw_ =
+        ("_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_7OatFileEPS9_"_sym |
+         "_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPKNS_7OatFileEPS9_"_sym).as<
         const DexFile*(const uint8_t* dex_file, size_t size, const std::string& location,
                        uint32_t location_checksum, void* mem_map, const void* oat_dex_file,
-                       std::string* error_msg)>
-        OpenMemoryRaw_;
+                       std::string* error_msg)>;
 
-    inline static Function<
-        {"_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPS9_",
-         "_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPS9_"},
+    inline static auto OpenMemoryWithoutOdex_ =
+            ("_ZN3art7DexFile10OpenMemoryEPKhjRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPS9_"_sym |
+         "_ZN3art7DexFile10OpenMemoryEPKhmRKNSt3__112basic_stringIcNS3_11char_traitsIcEENS3_9allocatorIcEEEEjPNS_6MemMapEPS9_"_sym).as<
         const DexFile*(const uint8_t* dex_file, size_t size, const std::string& location,
-                       uint32_t location_checksum, void* mem_map, std::string* error_msg)>
-        OpenMemoryWithoutOdex_;
+                       uint32_t location_checksum, void* mem_map, std::string* error_msg)>;
 
-    inline static Function<"_ZN3artL18DexFile_setTrustedEP7_JNIEnvP7_jclassP8_jobject",
-                           void(JNIEnv* env, jclass clazz, jobject j_cookie)>
-        DexFile_setTrusted_;
+    inline static auto DexFile_setTrusted_ =
+            "_ZN3artL18DexFile_setTrustedEP7_JNIEnvP7_jclassP8_jobject"_sym.as<void(JNIEnv* env, jclass clazz, jobject j_cookie)>;
 
 public:
     static const DexFile* OpenMemory(const uint8_t* dex_file, size_t size, std::string location,
@@ -97,15 +93,14 @@ public:
     static bool Init(JNIEnv* env, const HookHandler& handler) {
         auto sdk_int = GetAndroidApiLevel();
         if (sdk_int >= __ANDROID_API_P__) [[likely]] {
-            if (!handler.dlsym(DexFile_setTrusted_, true)) {
+            if (!handler(DexFile_setTrusted_, true)) {
                 LOGW("DexFile.setTrusted not found, MakeDexFileTrusted will not work.");
             }
         }
         if (sdk_int >= __ANDROID_API_O__) [[likely]] {
             return true;
         }
-        if (!handler.dlsym(OpenMemory_) && !handler.dlsym(OpenMemoryRaw_) &&
-            !handler.dlsym(OpenMemoryWithoutOdex_)) [[unlikely]] {
+        if (!handler(OpenMemory_, OpenMemoryRaw_, OpenMemoryWithoutOdex_)) [[unlikely]] {
             LOGE("Failed to find OpenMemory");
             return false;
         }

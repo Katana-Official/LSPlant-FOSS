@@ -2,18 +2,17 @@ module;
 
 #include "logging.hpp"
 
-export module jit_code_cache;
+export module lsplant:jit_code_cache;
 
-import art_method;
-import common;
-import thread;
+import :art_method;
+import :common;
+import :thread;
 import hook_helper;
 
 namespace lsplant::art::jit {
 export class JitCodeCache {
-    inline static MemberFunction<"_ZN3art3jit12JitCodeCache18MoveObsoleteMethodEPNS_9ArtMethodES3_",
-                                 JitCodeCache, void(ArtMethod *, ArtMethod *)>
-        MoveObsoleteMethod_;
+    inline static auto MoveObsoleteMethod_ =
+            "_ZN3art3jit12JitCodeCache18MoveObsoleteMethodEPNS_9ArtMethodES3_"_sym.as<void(JitCodeCache::*)(ArtMethod *, ArtMethod *)>;
 
     static void MoveObsoleteMethods(JitCodeCache *thiz) {
         auto movements = GetJitMovements();
@@ -28,30 +27,32 @@ export class JitCodeCache {
         }
     }
 
-    inline static MemberHooker<"_ZN3art3jit12JitCodeCache19GarbageCollectCacheEPNS_6ThreadE",
-                               JitCodeCache, void(Thread *)>
-        GarbageCollectCache_ = +[](JitCodeCache *thiz, Thread *self) {
+    inline static auto GarbageCollectCache_ =
+            "_ZN3art3jit12JitCodeCache19GarbageCollectCacheEPNS_6ThreadE"_sym.hook->*[]
+        <MemBackup auto backup>
+        (JitCodeCache *thiz, Thread *self) static -> void {
             MoveObsoleteMethods(thiz);
-            GarbageCollectCache_(thiz, self);
+            backup(thiz, self);
         };
 
-    inline static MemberHooker<"_ZN3art3jit12JitCodeCache12DoCollectionEPNS_6ThreadE", JitCodeCache,
-                               void(Thread *)>
-        DoCollection_ = +[](JitCodeCache *thiz, Thread *self) {
+    inline static auto DoCollection_ =
+            "_ZN3art3jit12JitCodeCache12DoCollectionEPNS_6ThreadE"_sym.hook->*[]
+        <MemBackup auto backup>
+        (JitCodeCache *thiz, Thread *self) static -> void {
             MoveObsoleteMethods(thiz);
-            DoCollection_(thiz, self);
+            backup(thiz, self);
         };
 
 public:
     static bool Init(const HookHandler &handler) {
         auto sdk_int = GetAndroidApiLevel();
         if (sdk_int >= __ANDROID_API_O__) [[likely]] {
-            if (!handler.dlsym(MoveObsoleteMethod_)) [[unlikely]] {
+            if (!handler(MoveObsoleteMethod_)) [[unlikely]] {
                 return false;
             }
         }
         if (sdk_int >= __ANDROID_API_N__) [[likely]] {
-            if (!handler.hook(GarbageCollectCache_, DoCollection_)) [[unlikely]] {
+            if (!handler(GarbageCollectCache_, DoCollection_)) [[unlikely]] {
                 return false;
             }
         }
